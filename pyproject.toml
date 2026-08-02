@@ -16,7 +16,11 @@
 # under the License.
 
 [build-system]
-requires = ["setuptools>=40.9.0", "wheel"]
+# setuptools>=83.0.0: CVE-2026-59890 (MANIFEST.in exclusion bypass via
+# NFC/NFD normalization collision when building sdists) is fixed in 83.0.0.
+# Build isolation keeps this independent of the runtime setuptools pin in
+# requirements/base.in, which is held below 81 for pkg_resources consumers.
+requires = ["setuptools>=83.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
