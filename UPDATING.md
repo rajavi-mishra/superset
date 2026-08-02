@@ -24,6 +24,27 @@ assists people when migrating to a new version.
 
 ## Next
 
+### Prune tasks no longer read the retention period from Celery `options`
+
+The `prune_query`, `prune_logs` and `prune_tasks` beat tasks accepted
+`retention_period_days` through the Celery `options` dict as a deprecated
+fallback, slated for removal in 6.0. That fallback is gone; pass the retention
+period through `kwargs` instead:
+
+```python
+CELERY_BEAT_SCHEDULE = {
+    "prune_query": {
+        "task": "prune_query",
+        "schedule": crontab(minute=0, hour=0, day_of_month=1),
+        "kwargs": {"retention_period_days": 180},
+    },
+}
+```
+
+`retention_period_days` is now a required argument on all three tasks, so a
+schedule still passing it via `options` fails immediately with a `TypeError`
+instead of silently logging a deprecation warning.
+
 ### Principal listing APIs now honour related-field filters
 
 Two authorization-related listing behaviors changed for API clients. Neither
