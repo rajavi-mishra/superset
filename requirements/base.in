@@ -54,8 +54,14 @@ openapi-schema-validator>=0.6.3
 
 # Pin setuptools <81 until all dependencies migrate from pkg_resources to importlib.metadata
 # pkg_resources is deprecated and will be removed in setuptools 81+ (around 2025-11-30)
-# Known affected packages: Preset's 'clients' package
+# Known affected packages: Preset's 'clients' package, sqlalchemy-redshift <1.0
+# (whose 1.0 release needs SQLAlchemy 2.0, see apache/superset#39750)
 # See docs/docs/contributing/pkg-resources-migration.md for details
+#
+# CVE-2026-59890 (fixed only in setuptools 83.0.0) is an sdist-packaging flaw,
+# not a runtime one: the exposed path is the build-time toolchain, pinned
+# separately under [build-system] in pyproject.toml. This runtime pin stays
+# below 81 until the pkg_resources consumers above are gone.
 setuptools<81
 
 # google-auth 2.53+ dropped its transitive dependency on cachetools, which is
