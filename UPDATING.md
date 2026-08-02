@@ -56,7 +56,15 @@ on responses that read the session). Flask 3 drops `flask._app_ctx_stack` and
 Deployments with custom code (custom security managers, extensions, config
 hooks) should check for those two removed Flask APIs and for Flask-SQLAlchemy
 3.x changes — most notably that models are registered against the extension
-instance and `db.session` is scoped to the app context.
+instance.
+
+Flask-SQLAlchemy 3 scopes `db.session` to the Flask *application context*
+rather than to the greenlet/thread. Superset keeps the previous scoping by
+constructing the extension with an explicit `scopefunc`, so code that opens a
+nested `app.app_context()` continues to see the same session and connection as
+its caller. Custom code that relied on a nested app context yielding a fresh,
+independent session must open one explicitly (e.g. `db.create_scoped_session()`
+or a new `Session`) instead of relying on the context boundary.
 
 ### Principal listing APIs now honour related-field filters
 
