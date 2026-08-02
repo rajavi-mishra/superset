@@ -135,6 +135,25 @@ running a custom auth postback endpoint), you can add the endpoints to `WTF_CSRF
 3. Verify data is flowing
     - Once SSH tunneling has been enabled, go to SQL Lab and write a query to verify data is properly flowing.
 
+:::warning
+SSH tunneling depends on `paramiko`, which is pinned below 4.0 because
+`sshtunnel` (unmaintained since 2021) references `paramiko.DSSKey`, removed in
+paramiko 4.0. Paramiko releases in that range accept the deprecated SHA-1
+signature algorithm for `ssh-rsa` keys (CVE-2026-44405); the fix landed in
+paramiko 5.0.0, which Superset cannot adopt until the `sshtunnel` dependency is
+replaced or forked.
+
+An attacker positioned to influence host-key/algorithm negotiation during the
+tunnel handshake can therefore push the connection onto SHA-1 signatures. If
+that matters for your deployment, configure the SSH servers you tunnel through
+to offer only `rsa-sha2-256`/`rsa-sha2-512` (or non-RSA host keys), set an
+expected `server_host_key` on each tunnel, and enable
+`SSH_TUNNEL_STRICT_HOST_KEY_CHECKING`. Deployments that need a hard client-side
+guarantee can override `SSH_TUNNEL_MANAGER_CLASS` and construct paramiko
+transports with `disabled_algorithms={"keys": ["ssh-rsa"], "pubkeys": ["ssh-rsa"]}`;
+`sshtunnel` itself exposes no hook for this.
+:::
+
 ## Domain Sharding
 
 :::note
