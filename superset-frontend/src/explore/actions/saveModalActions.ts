@@ -244,7 +244,7 @@ export const updateSlice =
           formData,
           dashboards,
           editors as [],
-          formDataFromSlice,
+          formDataFromSlice as QueryFormData,
         ),
       });
 
