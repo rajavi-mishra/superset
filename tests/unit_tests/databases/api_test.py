@@ -347,8 +347,8 @@ def test_database_connection(
     }
 
 
-@pytest.mark.skip(reason="Works locally but fails on CI")
 def test_update_with_password_mask(
+    mocker: MockerFixture,
     app: Any,
     session: Session,
     client: Any,
@@ -359,6 +359,11 @@ def test_update_with_password_mask(
     """
     from superset.databases.api import DatabaseRestApi
     from superset.models.core import Database
+
+    mocker.patch(
+        "superset.commands.database.update.get_username", return_value="admin"
+    )
+    mocker.patch("superset.security_manager.get_user_by_username")
 
     DatabaseRestApi.datamodel._session = session
 
