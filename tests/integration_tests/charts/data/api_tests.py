@@ -889,12 +889,6 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         rv = self.post_assert_metric(CHART_DATA_URI, self.query_context_payload, "data")
         assert rv.status_code == 200
 
-    @pytest.mark.skip(
-        reason=(
-            "An invalid GLOBAL_ASYNC_QUERIES JWT cookie no longer yields 401; "
-            "the request succeeds with 200."
-        )
-    )
     @with_feature_flags(GLOBAL_ASYNC_QUERIES=True)
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_chart_data_async_invalid_token(self):
@@ -903,6 +897,10 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         """
         app._got_first_request = False
         async_query_manager_factory.init_app(app)
+        # The token is only validated on the async dispatch path, so force=True
+        # is required to stop a cached result from short-circuiting the request
+        # into a synchronous 200 before validation runs.
+        self.query_context_payload["force"] = True
         test_client.set_cookie(
             app.config["GLOBAL_ASYNC_QUERIES_JWT_COOKIE_NAME"], "foo"
         )
