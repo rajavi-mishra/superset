@@ -136,6 +136,17 @@ EXPLORE_FORM_DATA_CACHE_CONFIG = {
 
 GLOBAL_ASYNC_QUERIES_JWT_SECRET = "test-secret-change-me-test-secret-change-me"  # noqa: S105
 
+# the base config hardcodes port 6379; CI lanes bind Redis to other ports
+GLOBAL_ASYNC_QUERIES_CACHE_BACKEND = {
+    "CACHE_TYPE": "RedisCache",
+    "CACHE_REDIS_HOST": REDIS_HOST,
+    "CACHE_REDIS_PORT": int(REDIS_PORT),
+    "CACHE_REDIS_USER": "",
+    "CACHE_REDIS_PASSWORD": "",
+    "CACHE_REDIS_DB": 0,
+    "CACHE_DEFAULT_TIMEOUT": 300,
+}
+
 ALERT_REPORTS_WORKING_TIME_OUT_KILL = True
 
 ALERT_REPORTS_QUERY_EXECUTION_MAX_TRIES = 3
