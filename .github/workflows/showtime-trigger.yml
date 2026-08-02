@@ -105,7 +105,7 @@ jobs:
         if: steps.auth.outputs.authorized == 'true'
         run: |
           echo "::notice::Maintainer $GITHUB_ACTOR triggered deploy for PR ${PULL_REQUEST_NUMBER}"
-          pip install --upgrade superset-showtime
+          pip install superset-showtime==0.7.1
           showtime version
 
         env:
