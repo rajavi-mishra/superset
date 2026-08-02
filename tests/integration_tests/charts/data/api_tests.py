@@ -18,7 +18,6 @@
 from __future__ import annotations
 
 import copy
-import time
 import unittest
 from contextlib import contextmanager
 from datetime import datetime
@@ -743,7 +742,6 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         if get_example_database().backend != "presto":
             assert "('boy' = 'boy')" in result
 
-    @unittest.skip("Extremely flaky test on MySQL")
     @with_feature_flags(GLOBAL_ASYNC_QUERIES=True)
     @pytest.mark.usefixtures("load_birth_names_dashboard_with_slices")
     def test_chart_data_async(self):
@@ -751,12 +749,11 @@ class TestPostChartDataApi(BaseTestChartDataApi):
         app._got_first_request = False
         async_query_manager_factory.init_app(app)
         self.login(ADMIN_USERNAME)
-        # Introducing time.sleep to make test less flaky with MySQL
-        time.sleep(1)
+        # force=True bypasses the cache lookup, so the async job is dispatched
+        # regardless of what earlier tests left in the shared data cache.
+        self.query_context_payload["force"] = True
         rv = self.post_assert_metric(CHART_DATA_URI, self.query_context_payload, "data")
-        time.sleep(1)
         assert rv.status_code == 202
-        time.sleep(1)
         data = json.loads(rv.data.decode("utf-8"))
         keys = list(data.keys())
         self.assertCountEqual(  # noqa: PT009
