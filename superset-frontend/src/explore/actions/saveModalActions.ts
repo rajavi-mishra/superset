@@ -88,7 +88,7 @@ export const getSlicePayload = async (
   formDataWithNativeFilters: QueryFormData = {} as QueryFormData,
   dashboards: number[],
   editors: [],
-  formDataFromSlice: QueryFormData = {} as QueryFormData,
+  formDataFromSlice: Slice['form_data'] = {},
 ): Promise<Partial<PayloadSlice>> => {
   const adhocFilters: Partial<QueryFormData> = extractAdhocFiltersFromFormData(
     formDataWithNativeFilters,

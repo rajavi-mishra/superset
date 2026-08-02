@@ -347,7 +347,7 @@ export type Slice = {
   slice_name: string;
   description: string;
   description_markdown: string;
-  form_data: any;
+  form_data: ChartProps['rawFormData'];
   slice_url: string;
   viz_type: string;
   thumbnail_url: string;
