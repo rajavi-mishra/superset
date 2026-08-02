@@ -136,6 +136,17 @@ EXPLORE_FORM_DATA_CACHE_CONFIG = {
 
 GLOBAL_ASYNC_QUERIES_JWT_SECRET = "test-secret-change-me-test-secret-change-me"  # noqa: S105
 
+# The base config points this at localhost:6379; CI exposes Redis on
+# REDIS_PORT, so async query dispatch needs the same host/port as the other
+# cache backends here.
+GLOBAL_ASYNC_QUERIES_CACHE_BACKEND = {
+    "CACHE_TYPE": "RedisCache",
+    "CACHE_REDIS_HOST": REDIS_HOST,
+    "CACHE_REDIS_PORT": int(REDIS_PORT),
+    "CACHE_REDIS_DB": int(REDIS_RESULTS_DB),
+    "CACHE_DEFAULT_TIMEOUT": 300,
+}
+
 ALERT_REPORTS_WORKING_TIME_OUT_KILL = True
 
 ALERT_REPORTS_QUERY_EXECUTION_MAX_TRIES = 3
