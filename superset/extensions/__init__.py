@@ -34,6 +34,11 @@ except ImportError:
         return SQLAlchemy
 
 
+try:
+    from greenlet import getcurrent as session_scope_ident
+except ImportError:
+    from threading import get_ident as session_scope_ident
+
 from flask_caching.backends.base import BaseCache
 from flask_migrate import Migrate
 from flask_talisman import Talisman
@@ -154,7 +159,11 @@ async_query_manager: AsyncQueryManager = LocalProxy(
 cache_manager = CacheManager()
 celery_app = celery.Celery()
 csrf = CSRFProtect()
-db = get_sqla_class()()
+# Scope `db.session` to the greenlet/thread rather than to the Flask application
+# context. Flask-SQLAlchemy 3 defaults to app-context scoping, which would give
+# code that opens a nested `app.app_context()` a different session — and a
+# different connection — than its caller.
+db = get_sqla_class()(session_options={"scopefunc": session_scope_ident})
 
 # make_versioned() MUST be called immediately after db is constructed and before
 # any versioned model class is defined.  Continuum patches the SQLAlchemy
