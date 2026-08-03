@@ -45,6 +45,27 @@ CELERY_BEAT_SCHEDULE = {
 schedule still passing it via `options` fails immediately with a `TypeError`
 instead of silently logging a deprecation warning.
 
+### Flask 3 (and Flask-SQLAlchemy 3, Flask-Babel 4)
+
+The pinned Flask version moves from 2.3.3 to 3.1.3, and the minimum in
+`pyproject.toml` is raised to `>=3.1.3` (CVE-2026-27205, missing `Vary: Cookie`
+on responses that read the session). Flask 3 drops `flask._app_ctx_stack` and
+`flask.helpers.locked_cached_property`, so two transitive pins move with it:
+`flask-sqlalchemy` 2.5.1 → 3.0.5 and `flask-babel` 3.1.0 → 4.0.0.
+
+Deployments with custom code (custom security managers, extensions, config
+hooks) should check for those two removed Flask APIs and for Flask-SQLAlchemy
+3.x changes — most notably that models are registered against the extension
+instance.
+
+Flask-SQLAlchemy 3 scopes `db.session` to the Flask *application context*
+rather than to the greenlet/thread. Superset keeps the previous scoping by
+constructing the extension with an explicit `scopefunc`, so code that opens a
+nested `app.app_context()` continues to see the same session and connection as
+its caller. Custom code that relied on a nested app context yielding a fresh,
+independent session must open one explicitly (e.g. `db.create_scoped_session()`
+or a new `Session`) instead of relying on the context boundary.
+
 ### Principal listing APIs now honour related-field filters
 
 Two authorization-related listing behaviors changed for API clients. Neither
