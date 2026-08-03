@@ -199,9 +199,9 @@ def test_duplicate_dataset_success() -> None:
         patch("superset.commands.dataset.duplicate.security_manager.raise_for_access"),
     ):
         with patch(
-            "superset.commands.dataset.duplicate.db.session.query"
-        ) as mock_query:
-            mock_query.return_value.get.return_value = mock_database
+            "superset.commands.dataset.duplicate.db.session.get"
+        ) as mock_session_get:
+            mock_session_get.return_value = mock_database
             with patch(
                 "superset.commands.dataset.duplicate.DatasetDAO.validate_uniqueness",
                 return_value=True,
@@ -370,9 +370,9 @@ def test_duplicate_dataset_catalog_preserved() -> None:
         patch("superset.commands.dataset.duplicate.security_manager.raise_for_access"),
     ):
         with patch(
-            "superset.commands.dataset.duplicate.db.session.query"
-        ) as mock_query:
-            mock_query.return_value.get.return_value = mock_database
+            "superset.commands.dataset.duplicate.db.session.get"
+        ) as mock_session_get:
+            mock_session_get.return_value = mock_database
             with patch(
                 "superset.commands.dataset.duplicate.DatasetDAO.validate_uniqueness",
                 return_value=True,
@@ -499,9 +499,9 @@ def test_duplicate_dataset_with_columns_and_metrics() -> None:
         patch("superset.commands.dataset.duplicate.security_manager.raise_for_access"),
     ):
         with patch(
-            "superset.commands.dataset.duplicate.db.session.query"
-        ) as mock_query:
-            mock_query.return_value.get.return_value = mock_database
+            "superset.commands.dataset.duplicate.db.session.get"
+        ) as mock_session_get:
+            mock_session_get.return_value = mock_database
             with patch(
                 "superset.commands.dataset.duplicate.DatasetDAO.validate_uniqueness",
                 return_value=True,
