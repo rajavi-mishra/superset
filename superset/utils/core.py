@@ -75,9 +75,9 @@ from flask_sqlalchemy import SQLAlchemy
 from markupsafe import Markup
 from pandas.api.types import infer_dtype
 from pandas.core.dtypes.common import is_numeric_dtype
-from sqlalchemy import event, exc, inspect, select, Text
+from sqlalchemy import event, inspect, Text
 from sqlalchemy.dialects.mysql import LONGTEXT, MEDIUMTEXT
-from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.sql.type_api import Variant
 from sqlalchemy.types import TypeEngine
@@ -791,40 +791,17 @@ timeout: type[TimerTimeout] | type[SigalrmTimeout] = (
 
 
 def pessimistic_connection_handling(some_engine: Engine) -> None:
-    @event.listens_for(some_engine, "engine_connect")
-    def ping_connection(connection: Connection, branch: bool) -> None:
-        if branch:
-            # 'branch' refers to a sub-connection of a connection,
-            # we don't want to bother pinging on these.
-            return
+    """
+    Install engine-level event listeners for the metadata database.
 
-        # turn off 'close with result'.  This flag is only used with
-        # 'connectionless' execution, otherwise will be False in any case
-        save_should_close_with_result = connection.should_close_with_result
-        connection.should_close_with_result = False
+    Liveness checking of pooled connections is provided by SQLAlchemy's
+    ``pool_pre_ping`` engine option, applied in
+    ``SupersetAppInitializer.setup_db`` and overridable through
+    ``SQLALCHEMY_ENGINE_OPTIONS``, rather than by an ``engine_connect``
+    listener issuing its own ``SELECT 1``.
 
-        try:
-            # run a SELECT 1.   use a core select() so that
-            # the SELECT of a scalar value without a table is
-            # appropriately formatted for the backend
-            connection.scalar(select(1))
-        except exc.DBAPIError as err:
-            # catch SQLAlchemy's DBAPIError, which is a wrapper
-            # for the DBAPI's exception.  It includes a .connection_invalidated
-            # attribute which specifies if this connection is a 'disconnect'
-            # condition, which is based on inspection of the original exception
-            # by the dialect in use.
-            if err.connection_invalidated:
-                # run the same SELECT again - the connection will re-validate
-                # itself and establish a new connection.  The disconnect detection
-                # here also causes the whole connection pool to be invalidated
-                # so that all stale connections are discarded.
-                connection.scalar(select(1))
-            else:
-                raise
-        finally:
-            # restore 'close with result'
-            connection.should_close_with_result = save_should_close_with_result
+    :param some_engine: The metadata database engine
+    """
 
     if some_engine.dialect.name == "sqlite":
 

@@ -1415,6 +1415,13 @@ class SupersetAppInitializer:  # pylint: disable=too-many-public-methods
         encrypted_field_factory.init_app(self.superset_app)
 
     def setup_db(self) -> None:
+        # Pooled connections are checked for liveness by SQLAlchemy itself; an
+        # explicit setting in SQLALCHEMY_ENGINE_OPTIONS wins.
+        self.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+            "pool_pre_ping": True,
+            **(self.config["SQLALCHEMY_ENGINE_OPTIONS"] or {}),
+        }
+
         db.init_app(self.superset_app)
 
         with self.superset_app.app_context():
